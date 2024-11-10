@@ -13,7 +13,12 @@ Resources:
   IAMRolesStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'https://s3.amazonaws.com/yourbucket/templates/iam-roles.yaml'
+      TemplateURL: 'https://s3.amazonaws.com/yourbucket/templates/iam-roles.yml'
+
+  EBApplicationStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'https://s3.amazonaws.com/yourbucket/templates/eb-application.yml'
 
   CodeBuildStack:
     Type: AWS::CloudFormation::Stack
