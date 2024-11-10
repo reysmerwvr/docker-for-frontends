@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Elastic Beanstalk Environment with Docker on Amazon Linux 2
+
+Resources:
+  # Create Elastic Beanstalk Application
+  ElasticBeanstalkApplication:
+    Type: "AWS::ElasticBeanstalk::Application"
+    Properties:
+      ApplicationName: !Sub '${AWS::StackName}-ElasticBeanstalkApplication'
+      Description: "Elastic Beanstalk Application for Docker on Amazon Linux 2"
+
+  # Elastic Beanstalk Environment
+  ElasticBeanstalkEnvironment:
+    Type: "AWS::ElasticBeanstalk::Environment"
+    Properties:
+      ApplicationName: !Ref ElasticBeanstalkApplication
+      EnvironmentName: !Sub '${AWS::StackName}-ElasticBeanstalkEnvironment'
+      SolutionStackName: "64bit Amazon Linux 2 v4.0.4 running Docker"
+      OptionSettings:
+        - Namespace: "aws:autoscaling:launchconfiguration"
+          OptionName: "InstanceType"
+          Value: "t2.micro"
+        - Namespace: "aws:autoscaling:launchconfiguration"
+          OptionName: "IamInstanceProfile"
+          Value: !ImportValue dff-iam-stack-EC2InstanceProfileArn
+        - Namespace: "aws:autoscaling:launchconfiguration"
+          OptionName: "DisableIMDSv1"
+          Value: "true"
+        - Namespace: "aws:elasticbeanstalk:environment"
+          OptionName: "EnvironmentType"
+          Value: "SingleInstance"
+        - Namespace: "aws:elasticbeanstalk:environment"
+          OptionName: "ServiceRole"
+          Value: !ImportValue dff-iam-stack-ElasticBeanstalkServiceRoleArn
+        - Namespace: "aws:autoscaling:asg"
+          OptionName: "MinSize"
+          Value: "1"
+        - Namespace: "aws:autoscaling:asg"
+          OptionName: "MaxSize"
+          Value: "1"
+
+Outputs:
+  ElasticBeanstalkEnvironmentURL:
+    Description: "URL of the Elastic Beanstalk Environment"
+    Value: !GetAtt ElasticBeanstalkEnvironment.EndpointURL
+    Export:
+      Name: !Sub '${AWS::StackName}-ElasticBeanstalkEnvironmentURL'
+
+  ElasticBeanstalkEnvironmentName:
+    Description: "Name of the Elastic Beanstalk Environment"
+    Value: !Ref ElasticBeanstalkEnvironment
+    Export:
+      Name: !Sub '${AWS::StackName}-ElasticBeanstalkEnvironmentName'
+
+  ElasticBeanstalkEnvironmentArn:
+    Description: "ARN of the Elastic Beanstalk Environment"
+    Value: !GetAtt ElasticBeanstalkEnvironment.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-ElasticBeanstalkEnvironmentArn'
