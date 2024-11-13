@@ -60,6 +60,8 @@ docker run -p 3000:3000 -v /app/node_modules -v $(pwd):/app -it <your-image-id>
 ## Docker Compose
 
 ```sh
-docker-compose up -d
+docker-compose -f docker-compose-dev.yml up -d
+docker-compose -f docker-compose-dev.yml up --build -d
+docker-compose -f docker-compose-dev.yml down
 docker run -it <your-image-id> npm run test
 ```
