@@ -25,7 +25,7 @@
 To create the stack:
 ```bash
 aws cloudformation create-stack \
-    --stack-name dff-iam-stack \
+    --stack-name DffIamStack \
     --template-body file://infrastructure/cloudformation/identity-manager/iam-roles.yml \
     --capabilities CAPABILITY_NAMED_IAM \
     --profile iamadmin-general
@@ -35,7 +35,7 @@ To check the status of your stack creation:
 
 ```bash
 aws cloudformation describe-stacks \
-    --stack-name dff-iam-stack \
+    --stack-name DffIamStack \
     --profile iamadmin-general
 ```
 
@@ -43,7 +43,7 @@ To update the stack:
 
 ```bash
 aws cloudformation update-stack \
-    --stack-name dff-iam-stack \
+    --stack-name DffIamStack \
     --template-body file://infrastructure/cloudformation/identity-manager/iam-roles.yml \
     --capabilities CAPABILITY_NAMED_IAM \
     --profile iamadmin-general
@@ -53,7 +53,7 @@ To get the output values of the stack:
 
 ```bash
 aws cloudformation describe-stacks \
-    --stack-name dff-iam-stack \
+    --stack-name DffIamStack \
     --query "Stacks[0].Outputs" \
     --profile iamadmin-general
 ```
@@ -62,7 +62,7 @@ To delete the stack:
 
 ```bash
 aws cloudformation delete-stack \
-    --stack-name dff-iam-stack \
+    --stack-name DffIamStack \
     --profile iamadmin-general
 ```
 
@@ -71,7 +71,7 @@ aws cloudformation delete-stack \
 To create the stack:
 ```bash
 aws cloudformation create-stack \
-    --stack-name dff-eb-stack \
+    --stack-name DffEbStack \
     --template-body file://infrastructure/cloudformation/elastic-beanstalk/eb-application.yml \
     --profile iamadmin-general
 ```
@@ -80,7 +80,7 @@ To check the status of your stack creation:
 
 ```bash
 aws cloudformation describe-stacks \
-    --stack-name dff-eb-stack \
+    --stack-name DffEbStack \
     --profile iamadmin-general
 ```
 
@@ -88,7 +88,7 @@ To update the stack:
 
 ```bash
 aws cloudformation update-stack \
-    --stack-name dff-eb-stack \
+    --stack-name DffEbStack \
     --template-body file://infrastructure/cloudformation/elastic-beanstalk/eb-application.yml \
     --profile iamadmin-general
 ```
@@ -97,7 +97,7 @@ To get the output values of the stack:
 
 ```bash
 aws cloudformation describe-stacks \
-    --stack-name dff-eb-stack \
+    --stack-name DffEbStack \
     --query "Stacks[0].Outputs" \
     --profile iamadmin-general
 ```
@@ -106,7 +106,7 @@ To delete the stack:
 
 ```bash
 aws cloudformation delete-stack \
-    --stack-name dff-eb-stack \
+    --stack-name DffEbStack \
     --profile iamadmin-general
 ```
 
