@@ -1,12 +1,18 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Elastic Beanstalk Environment with Docker on Amazon Linux 2
 
+Parameters:
+  StackOutputPrefix:
+    Description: Stack Output Prefix
+    Type: String
+    Default: DffEbStack
+
 Resources:
   # Create Elastic Beanstalk Application
   ElasticBeanstalkApplication:
     Type: "AWS::ElasticBeanstalk::Application"
     Properties:
-      ApplicationName: !Sub '${AWS::StackName}-ElasticBeanstalkApplication'
+      ApplicationName: !Sub '${StackOutputPrefix}-ElasticBeanstalkApplication'
       Description: "Elastic Beanstalk Application for Docker on Amazon Linux 2"
 
   # Elastic Beanstalk Environment
@@ -14,7 +20,7 @@ Resources:
     Type: "AWS::ElasticBeanstalk::Environment"
     Properties:
       ApplicationName: !Ref ElasticBeanstalkApplication
-      EnvironmentName: !Sub '${AWS::StackName}-ElasticBeanstalkEnvironment'
+      EnvironmentName: !Sub '${StackOutputPrefix}-ElasticBeanstalkEnvironment'
       SolutionStackName: "64bit Amazon Linux 2 v4.0.4 running Docker"
       OptionSettings:
         - Namespace: "aws:autoscaling:launchconfiguration"
@@ -44,10 +50,16 @@ Outputs:
     Description: "URL of the Elastic Beanstalk Environment"
     Value: !GetAtt ElasticBeanstalkEnvironment.EndpointURL
     Export:
-      Name: !Sub '${AWS::StackName}-ElasticBeanstalkEnvironmentURL'
+      Name: !Sub '${StackOutputPrefix}-ElasticBeanstalkEnvironmentURL'
 
   ElasticBeanstalkEnvironmentName:
     Description: "Name of the Elastic Beanstalk Environment"
     Value: !Ref ElasticBeanstalkEnvironment
     Export:
-      Name: !Sub '${AWS::StackName}-ElasticBeanstalkEnvironmentName'
+      Name: !Sub '${StackOutputPrefix}-ElasticBeanstalkEnvironmentName'
+
+  ElasticBeanstalkApplicationName:
+    Description: "Name of the Elastic Beanstalk Environment"
+    Value: !Ref ElasticBeanstalkApplication
+    Export:
+      Name: !Sub '${StackOutputPrefix}-ElasticBeanstalkApplicationName'

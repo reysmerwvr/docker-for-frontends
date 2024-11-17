@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "S3 Cloudformation Template"
+
+Parameters:
+  StackOutputPrefix:
+    Description: Stack Output Prefix
+    Type: String
+    Default: DffS3Stack
+
+Resources:
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: docker-for-frontends-artifacts
+      VersioningConfiguration:
+        Status: Enabled
+
+Outputs:
+  ArtifactBucketName:
+    Value: !Ref ArtifactBucket
+    Export:
+      Name: !Sub '${StackOutputPrefix}-ArtifactBucketName'

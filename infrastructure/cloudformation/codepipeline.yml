@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "CodePipeline Cloudformation Template"
+
+Parameters:
+  GithubUserName:
+    Description: Github username
+    Type: String
+    Default: reysmerwvr
+  GithubRepoName:
+    Description: Github repository name
+    Type: String
+    Default: docker-for-frontends
+  GithubBranch:
+    Description: Github repository name
+    Type: String
+    Default: master
+  StackOutputPrefix:
+    Description: Stack Output Prefix
+    Type: String
+    Default: DffCpStack
+
+Resources:
+  CodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub "${StackOutputPrefix}-CodePipeline"
+      RoleArn: !ImportValue DffIamStack-CodePipelineServiceRoleArn
+      ArtifactStore:
+        Type: S3
+        Location: !ImportValue DffS3Stack-ArtifactBucketName
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: GitHubSource
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: "1"
+              OutputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                Owner: !Ref GithubUserName
+                Repo: !Ref GithubRepoName
+                Branch: !Ref GithubBranch
+                OAuthToken: "{{resolve:secretsmanager:github-token}}"
+        - Name: Build
+          Actions:
+            - Name: BuildAction
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: "1"
+              InputArtifacts:
+                - Name: "SourceOutput"
+              OutputArtifacts:
+                - Name: "BuildOutput"
+              Configuration:
+                ProjectName: !ImportValue DffCbStack-CodeBuildProjectArn
+        - Name: "Deploy"
+          Actions:
+            - Name: "DeployToElasticBeanstalk"
+              ActionTypeId:
+                Category: "Deploy"
+                Owner: "AWS"
+                Provider: "ElasticBeanstalk"
+                Version: "1"
+              InputArtifacts:
+                - Name: "BuildOutput"
+              Configuration:
+                ApplicationName: !ImportValue DffEbStack-ElasticBeanstalkApplicationName
+                EnvironmentName: !ImportValue DffEbStack-ElasticBeanstalkEnvironmentName

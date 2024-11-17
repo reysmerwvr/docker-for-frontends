@@ -1,31 +1,37 @@
 AWSTemplateFormatVersion: '2010-09-09'
+Description: "Master stack"
+
 Resources:
+  SecretStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'https://s3.amazonaws.com/cf-templates-1rkt1bxdxoosl-eu-west-1/docker-for-frontends/secrets-manager.yml'
+
   S3Stack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'https://s3.amazonaws.com/yourbucket/templates/s3-buckets.yaml'
-
-  CloudFrontStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: 'https://s3.amazonaws.com/yourbucket/templates/cloudfront.yaml'
+      TemplateURL: 'https://s3.amazonaws.com/cf-templates-1rkt1bxdxoosl-eu-west-1/docker-for-frontends/s3-buckets.yml'
 
   IAMRolesStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'https://s3.amazonaws.com/yourbucket/templates/iam-roles.yml'
+      TemplateURL: 'https://s3.amazonaws.com/cf-templates-1rkt1bxdxoosl-eu-west-1/docker-for-frontends/iam-roles.yml'
+    DependsOn: S3Stack
 
   EBApplicationStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'https://s3.amazonaws.com/yourbucket/templates/eb-application.yml'
+      TemplateURL: 'https://s3.amazonaws.com/cf-templates-1rkt1bxdxoosl-eu-west-1/docker-for-frontends/elastic-beanstalk.yml'
+    DependsOn: IAMRolesStack
 
   CodeBuildStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'https://s3.amazonaws.com/yourbucket/templates/codebuild.yaml'
+      TemplateURL: 'https://s3.amazonaws.com/cf-templates-1rkt1bxdxoosl-eu-west-1/docker-for-frontends/codebuild.yml'
+    DependsOn: EBApplicationStack
 
   CodePipelineStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'https://s3.amazonaws.com/yourbucket/templates/codepipeline.yaml'
+      TemplateURL: 'https://s3.amazonaws.com/cf-templates-1rkt1bxdxoosl-eu-west-1/docker-for-frontends/codepipeline.yml'
+    DependsOn: CodeBuildStack
