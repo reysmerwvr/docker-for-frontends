@@ -26,23 +26,10 @@ phases:
       - echo "Pushing the Docker image to Amazon ECR..."
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/docker-for-frontends:latest
       - echo "Creating deployment artifact for Elastic Beanstalk..."
-      - mkdir -p deployment
-      - echo "version:1" > deployment/Dockerrun.aws.json
-      - echo "Writing Dockerrun.aws.json..."
-      - |
-        cat <<EOT >> deployment/Dockerrun.aws.json
-        {
-          "AWSEBDockerrunVersion": "1",
-          "Image": {
-            "Name": "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/docker-for-frontends:latest",
-            "Update": "true"
-          }
-        }
-        EOT
-      - zip -r deployment.zip deployment/
+      - zip -r deploy.zip . -x '*.git*'
       - echo "Post-build phase completed."
 
 artifacts:
   files:
-    - deployment.zip
+    - deploy.zip
   discard-paths: yes
