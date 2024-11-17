@@ -35,3 +35,9 @@ Resources:
     Properties:
       TemplateURL: 'https://s3.amazonaws.com/cf-templates-1rkt1bxdxoosl-eu-west-1/docker-for-frontends/codepipeline.yml'
     DependsOn: CodeBuildStack
+
+  ECRStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'https://s3.amazonaws.com/cf-templates-1rkt1bxdxoosl-eu-west-1/docker-for-frontends/ecr.yml'
+    DependsOn: CodePipelineStack

@@ -87,6 +87,7 @@ Resources:
                   - "s3:*"
                   - "elasticbeanstalk:*"
                   - "logs:*"
+                  - "ecr:*"
                 Resource: "*"
 
   # CodePipeline Service Role
@@ -111,6 +112,27 @@ Resources:
                   - "s3:*"
                   - "codebuild:*"
                   - "elasticbeanstalk:*"
+                Resource: "*"
+
+  # ECR Repository Management Role
+  ECRManagementRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecr.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ECRManagementPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "ecr:*"
                 Resource: "*"
 
 Outputs:
@@ -143,3 +165,9 @@ Outputs:
     Value: !GetAtt CodePipelineServiceRole.Arn
     Export:
       Name: !Sub "${StackOutputPrefix}-CodePipelineServiceRoleArn"
+
+  ECRManagementRoleArn:
+    Description: ARN of the ECR Management Role
+    Value: !GetAtt ECRManagementRole.Arn
+    Export:
+      Name: !Sub "${StackOutputPrefix}-ECRManagementRoleArn"
