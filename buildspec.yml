@@ -2,12 +2,49 @@ version: 0.2
 
 phases:
   install:
+    runtime-versions:
+      docker: latest
     commands:
-      - npm install
+      - echo "Installing dependencies..."
+      - apt-get update -y && apt-get install -y zip
+      - echo "Dependencies installed."
+
+  pre_build:
+    commands:
+      - echo "Logging in to Amazon ECR..."
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - echo "Pre-build phase completed."
+
   build:
     commands:
-      - npm run build
+      - echo "Building the Docker image..."
+      - docker build -t docker-for-frontends .
+      - echo "Tagging the Docker image..."
+      - docker tag docker-for-frontends:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/docker-for-frontends:latest
+      - echo "Build phase completed."
+
   post_build:
     commands:
-      - aws s3 sync dist/ s3://$HOSTING_BUCKET_NAME/ --delete
-      - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
+      - echo "Pushing the Docker image to Amazon ECR..."
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/docker-for-frontends:latest
+      - echo "Creating deployment artifact for Elastic Beanstalk..."
+      - mkdir -p deployment
+      - echo "version: 1" > deployment/Dockerrun.aws.json
+      - echo "Writing Dockerrun.aws.json..."
+      - |
+        cat <<EOT >> deployment/Dockerrun.aws.json
+        {
+          "AWSEBDockerrunVersion": "1",
+          "Image": {
+            "Name": "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/docker-for-frontends:latest",
+            "Update": "true"
+          }
+        }
+        EOT
+      - zip -r deployment.zip deployment/
+      - echo "Post-build phase completed."
+
+artifacts:
+  files:
+    - deployment.zip
+  discard-paths: yes
