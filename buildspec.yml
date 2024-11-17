@@ -29,7 +29,7 @@ phases:
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/docker-for-frontends:latest
       - echo "Creating deployment artifact for Elastic Beanstalk..."
       - mkdir -p deployment
-      - echo "version: 1" > deployment/Dockerrun.aws.json
+      - echo "version:1" > deployment/Dockerrun.aws.json
       - echo "Writing Dockerrun.aws.json..."
       - |
         cat <<EOT >> deployment/Dockerrun.aws.json
