@@ -2,20 +2,43 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: "CodeBuildProject Cloudformation Template"
 
 Parameters:
+  GithubUserName:
+    Description: Github username
+    Type: String
+    Default: reysmerwvr
+  GithubRepoName:
+    Description: Github repository name
+    Type: String
+    Default: docker-for-frontends
   StackOutputPrefix:
     Description: Stack Output Prefix
     Type: String
     Default: DffCbStack
 
 Resources:
+  CodeBuildSourceCredential:
+    Type: AWS::CodeBuild::SourceCredential
+    Properties:
+      AuthType: PERSONAL_ACCESS_TOKEN
+      ServerType: GITHUB
+      Token: "{{resolve:secretsmanager:github-token}}"
+
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
       Name: !Sub '${StackOutputPrefix}-CodeBuildProject'
       Source:
-        Type: "CODEPIPELINE"
+        Type: GITHUB
+        Location: !Sub "https://github.com/${GithubUserName}/${GithubRepoName}.git"
+        GitCloneDepth: 1
+        ReportBuildStatus: true
+        Auth:
+          Type: OAUTH
+          Resource: !Ref CodeBuildSourceCredential
       Artifacts:
-        Type: "CODEPIPELINE"
+        Type: "S3"
+        Location: !ImportValue DffS3Stack-ArtifactBucketName
+        Path: "artifacts"
       Environment:
         ComputeType: BUILD_GENERAL1_SMALL
         Image: 'aws/codebuild/standard:6.0'
