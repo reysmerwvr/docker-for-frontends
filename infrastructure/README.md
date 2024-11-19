@@ -252,7 +252,7 @@ aws cloudformation delete-stack \
 
 ```bash
 
-aws s3 cp infrastructure/cloudformation/ s3://cf-templates-1rkt1bxdxoosl-eu-west-1/docker-for-frontends --recursive --profile iamadmin-docker
+aws s3 cp infrastructure/cloudformation/ s3://cf-templates-1sssdcyntfe5g-eu-west-1/docker-for-frontends --recursive --profile iamadmin-docker
 
 # To create the stack:
 
