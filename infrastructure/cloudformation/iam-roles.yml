@@ -112,6 +112,12 @@ Resources:
                   - "s3:*"
                   - "codebuild:*"
                   - "elasticbeanstalk:*"
+                  - "elasticloadbalancing:*"
+                  - "ec2:*"
+                  - "autoscaling:*"
+                  - "cloudwatch:*"
+                  - "logs:*"
+                  - "cloudformation:*"
                 Resource: "*"
 
   # ECR Repository Management Role
