@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: "CodeBuildProject Cloudformation Template"
+Description: CodeBuildProject Cloudformation Template
 
 Parameters:
   GithubUserName:
@@ -21,33 +21,33 @@ Resources:
     Properties:
       AuthType: PERSONAL_ACCESS_TOKEN
       ServerType: GITHUB
-      Token: "{{resolve:secretsmanager:github-token}}"
+      Token: '{{resolve:secretsmanager:github-token}}'
 
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub '${StackOutputPrefix}-CodeBuildProject'
+      Name: !Sub ${StackOutputPrefix}-CodeBuildProject
       Source:
         Type: GITHUB
-        Location: !Sub "https://github.com/${GithubUserName}/${GithubRepoName}.git"
+        Location: !Sub https://github.com/${GithubUserName}/${GithubRepoName}.git
         GitCloneDepth: 1
         ReportBuildStatus: true
         Auth:
           Type: OAUTH
           Resource: !Ref CodeBuildSourceCredential
       Artifacts:
-        Type: "S3"
+        Type: S3
         Location: !ImportValue DffS3Stack-ArtifactBucketName
-        Path: "artifacts"
+        Path: artifacts
       Environment:
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: 'aws/codebuild/standard:6.0'
+        Image: aws/codebuild/standard:6.0
         Type: LINUX_CONTAINER
         PrivilegedMode: true
         EnvironmentVariables:
-          - Name: "AWS_ACCOUNT_ID"
+          - Name: AWS_ACCOUNT_ID
             Value: !Ref AWS::AccountId
-          - Name: "AWS_DEFAULT_REGION"
+          - Name: AWS_DEFAULT_REGION
             Value: !Ref AWS::Region
       ServiceRole: !ImportValue DffIamStack-CodeBuildServiceRoleArn
 
@@ -55,4 +55,4 @@ Outputs:
   CodeBuildProjectArn:
     Value: !Ref CodeBuildProject
     Export:
-      Name: !Sub '${StackOutputPrefix}-CodeBuildProjectArn'
+      Name: !Sub ${StackOutputPrefix}-CodeBuildProjectArn

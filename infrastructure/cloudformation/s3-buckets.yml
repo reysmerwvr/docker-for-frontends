@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: "S3 Cloudformation Template"
+Description: Artifact Bucket Cloudformation Template
 
 Parameters:
   StackOutputPrefix:
@@ -19,4 +19,4 @@ Outputs:
   ArtifactBucketName:
     Value: !Ref ArtifactBucket
     Export:
-      Name: !Sub '${StackOutputPrefix}-ArtifactBucketName'
+      Name: !Sub ${StackOutputPrefix}-ArtifactBucketName

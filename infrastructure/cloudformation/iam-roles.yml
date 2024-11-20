@@ -1,5 +1,5 @@
-AWSTemplateFormatVersion: "2010-09-09"
-Description: "IAM Roles Cloudformation Template"
+AWSTemplateFormatVersion: '2010-09-09'
+Description: IAM Roles Cloudformation Template
 
 Parameters:
   StackOutputPrefix:
@@ -10,40 +10,40 @@ Parameters:
 Resources:
   # Elastic Beanstalk Service Role
   ElasticBeanstalkServiceRole:
-    Type: "AWS::IAM::Role"
+    Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "${StackOutputPrefix}-ElasticBeanstalkServiceRole"
+      RoleName: !Sub ${StackOutputPrefix}-ElasticBeanstalkServiceRole
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
-          - Effect: "Allow"
+          - Effect: Allow
             Principal:
-              Service: "elasticbeanstalk.amazonaws.com"
-            Action: "sts:AssumeRole"
+              Service: elasticbeanstalk.amazonaws.com
+            Action: sts:AssumeRole
       Policies:
-        - PolicyName: "ElasticBeanstalkManagedPolicy"
+        - PolicyName: ElasticBeanstalkManagedPolicy
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: '2012-10-17'
             Statement:
-              - Effect: "Allow"
+              - Effect: Allow
                 Action:
-                  - "elasticloadbalancing:*"
-                  - "ec2:*"
-                  - "autoscaling:*"
-                  - "cloudwatch:*"
-                  - "s3:*"
-                  - "logs:*"
-                  - "cloudformation:DescribeStackResources"
-                  - "cloudformation:DescribeStacks"
-                Resource: "*"
+                  - elasticloadbalancing:*
+                  - ec2:*
+                  - autoscaling:*
+                  - cloudwatch:*
+                  - s3:*
+                  - logs:*
+                  - cloudformation:DescribeStackResources
+                  - cloudformation:DescribeStacks
+                Resource: '*'
 
   # EC2 Instance Role
   EC2InstanceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "${StackOutputPrefix}-ElasticBeanstalk-EC2InstanceRole"
+      RoleName: !Sub ${StackOutputPrefix}-ElasticBeanstalk-EC2InstanceRole
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
@@ -54,14 +54,14 @@ Resources:
         - arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier # Allows EC2 to use Elastic Beanstalk Web Tier
         - arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier # Allows EC2 to use Elastic Beanstalk Worker Tier
         - arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker # Allows EC2 to use Elastic Beanstalk Multicontainer Docker
-      Path: "/"
+      Path: /
 
   # EC2 Instance Profile
   EC2InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
-      InstanceProfileName: !Sub "${StackOutputPrefix}-ElasticBeanstalk-EC2InstanceProfile"
-      Path: "/"
+      InstanceProfileName: !Sub ${StackOutputPrefix}-ElasticBeanstalk-EC2InstanceProfile
+      Path: /
       Roles:
         - !Ref EC2InstanceRole
 
@@ -69,34 +69,34 @@ Resources:
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "${StackOutputPrefix}-CodeBuildServiceRole"
+      RoleName: !Sub ${StackOutputPrefix}-CodeBuildServiceRole
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
               Service: codebuild.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: "CodeBuildAccess"
+        - PolicyName: CodeBuildAccess
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
-                  - "s3:*"
-                  - "elasticbeanstalk:*"
-                  - "logs:*"
-                  - "ecr:*"
-                Resource: "*"
+                  - s3:*
+                  - elasticbeanstalk:*
+                  - logs:*
+                  - ecr:*
+                Resource: '*'
 
   # CodePipeline Service Role
   CodePipelineServiceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "${StackOutputPrefix}-CodePipelineServiceRole"
+      RoleName: !Sub ${StackOutputPrefix}-CodePipelineServiceRole
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
@@ -105,27 +105,27 @@ Resources:
       Policies:
         - PolicyName: CodePipelineAccess
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
-                  - "s3:*"
-                  - "codebuild:*"
-                  - "elasticbeanstalk:*"
-                  - "elasticloadbalancing:*"
-                  - "ec2:*"
-                  - "autoscaling:*"
-                  - "cloudwatch:*"
-                  - "logs:*"
-                  - "cloudformation:*"
-                Resource: "*"
+                  - s3:*
+                  - codebuild:*
+                  - elasticbeanstalk:*
+                  - elasticloadbalancing:*
+                  - ec2:*
+                  - autoscaling:*
+                  - cloudwatch:*
+                  - logs:*
+                  - cloudformation:*
+                Resource: '*'
 
   # ECR Repository Management Role
   ECRManagementRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
@@ -134,46 +134,46 @@ Resources:
       Policies:
         - PolicyName: ECRManagementPolicy
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
-                  - "ecr:*"
-                Resource: "*"
+                  - ecr:*
+                Resource: '*'
 
 Outputs:
   ElasticBeanstalkServiceRoleArn:
     Description: ARN of the Elastic Beanstalk Service Role
     Value: !GetAtt ElasticBeanstalkServiceRole.Arn
     Export:
-      Name: !Sub "${StackOutputPrefix}-ElasticBeanstalkServiceRoleArn"
+      Name: !Sub ${StackOutputPrefix}-ElasticBeanstalkServiceRoleArn
 
   EC2InstanceProfileArn:
     Description: ARN of the EC2 Instance Profile
     Value: !GetAtt EC2InstanceProfile.Arn
     Export:
-      Name: !Sub "${StackOutputPrefix}-EC2InstanceProfileArn"
+      Name: !Sub ${StackOutputPrefix}-EC2InstanceProfileArn
 
   EC2InstanceRoleArn:
     Description: ARN of the EC2 Instance Role
     Value: !GetAtt EC2InstanceRole.Arn
     Export:
-      Name: !Sub "${StackOutputPrefix}-EC2InstanceRoleArn"
+      Name: !Sub ${StackOutputPrefix}-EC2InstanceRoleArn
 
   CodeBuildServiceRoleArn:
     Description: ARN of the CodeBuild Service Role
     Value: !GetAtt CodeBuildServiceRole.Arn
     Export:
-      Name: !Sub "${StackOutputPrefix}-CodeBuildServiceRoleArn"
+      Name: !Sub ${StackOutputPrefix}-CodeBuildServiceRoleArn
 
   CodePipelineServiceRoleArn:
     Description: ARN of the CodePipeline Service Role
     Value: !GetAtt CodePipelineServiceRole.Arn
     Export:
-      Name: !Sub "${StackOutputPrefix}-CodePipelineServiceRoleArn"
+      Name: !Sub ${StackOutputPrefix}-CodePipelineServiceRoleArn
 
   ECRManagementRoleArn:
     Description: ARN of the ECR Management Role
     Value: !GetAtt ECRManagementRole.Arn
     Export:
-      Name: !Sub "${StackOutputPrefix}-ECRManagementRoleArn"
+      Name: !Sub ${StackOutputPrefix}-ECRManagementRoleArn

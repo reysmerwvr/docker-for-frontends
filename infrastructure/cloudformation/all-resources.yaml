@@ -1,0 +1,428 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "All Cloudformation Templates"
+
+Parameters:
+  IamOutputPrefix:
+    Description: Stack Output Prefix
+    Type: String
+    Default: DffIamStack
+  S3OutputPrefix:
+    Description: Stack Output Prefix
+    Type: String
+    Default: DffS3Stack
+  EbOutputPrefix:
+    Description: Stack Output Prefix
+    Type: String
+    Default: DffEbStack
+  GithubUserName:
+    Description: Github username
+    Type: String
+    Default: reysmerwvr
+  GithubRepoName:
+    Description: Github repository name
+    Type: String
+    Default: docker-for-frontends
+  GithubBranch:
+    Description: Github repository name
+    Type: String
+    Default: master
+  CbOutputPrefix:
+    Description: Stack Output Prefix
+    Type: String
+    Default: DffCbStack
+  CpOutputPrefix:
+    Description: Stack Output Prefix
+    Type: String
+    Default: DffCpStack
+  ECRRepoName:
+    Description: ECR repository name
+    Type: String
+    Default: docker-for-frontends
+  EcrOutputPrefix:
+    Description: Stack Output Prefix
+    Type: String
+    Default: DffEcrStack
+
+Resources:
+  GithubTokenSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: github-token
+      Description: Github Token
+      SecretString: REPLACE THIS WITH YOUR TOKEN
+      Tags:
+        - Key: Environment
+          Value: Dev
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Delete
+
+  # Elastic Beanstalk Service Role
+  ElasticBeanstalkServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${IamOutputPrefix}-ElasticBeanstalkServiceRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: elasticbeanstalk.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ElasticBeanstalkManagedPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - elasticloadbalancing:*
+                  - ec2:*
+                  - autoscaling:*
+                  - cloudwatch:*
+                  - s3:*
+                  - logs:*
+                  - cloudformation:DescribeStackResources
+                  - cloudformation:DescribeStacks
+                Resource: '*'
+
+  # EC2 Instance Role
+  EC2InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${IamOutputPrefix}-ElasticBeanstalk-EC2InstanceRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore # Allows EC2 to use Systems Manager
+        - arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier # Allows EC2 to use Elastic Beanstalk Web Tier
+        - arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier # Allows EC2 to use Elastic Beanstalk Worker Tier
+        - arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker # Allows EC2 to use Elastic Beanstalk Multicontainer Docker
+      Path: /
+
+  # EC2 Instance Profile
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub ${IamOutputPrefix}-ElasticBeanstalk-EC2InstanceProfile
+      Path: /
+      Roles:
+        - !Ref EC2InstanceRole
+
+  # CodeBuild Service Role
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${IamOutputPrefix}-CodeBuildServiceRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodeBuildAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:*
+                  - elasticbeanstalk:*
+                  - logs:*
+                  - ecr:*
+                Resource: '*'
+
+  # CodePipeline Service Role
+  CodePipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${IamOutputPrefix}-CodePipelineServiceRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodePipelineAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:*
+                  - codebuild:*
+                  - elasticbeanstalk:*
+                  - elasticloadbalancing:*
+                  - ec2:*
+                  - autoscaling:*
+                  - cloudwatch:*
+                  - logs:*
+                  - cloudformation:*
+                Resource: '*'
+
+  # ECR Repository Management Role
+  ECRManagementRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecr.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ECRManagementPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ecr:*
+                Resource: '*'
+
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: docker-for-frontends-artifacts
+      VersioningConfiguration:
+        Status: Enabled
+
+  # Create Elastic Beanstalk Application
+  ElasticBeanstalkApplication:
+    Type: AWS::ElasticBeanstalk::Application
+    Properties:
+      ApplicationName: !Sub ${EbOutputPrefix}-ElasticBeanstalkApplication
+      Description: Elastic Beanstalk Application for Docker on Amazon Linux 2
+
+  # Elastic Beanstalk Environment
+  ElasticBeanstalkEnvironment:
+    Type: AWS::ElasticBeanstalk::Environment
+    Properties:
+      ApplicationName: !Ref ElasticBeanstalkApplication
+      EnvironmentName: !Sub ${EbOutputPrefix}-ElasticBeanstalkEnvironment
+      SolutionStackName: 64bit Amazon Linux 2 v4.0.4 running Docker
+      OptionSettings:
+        - Namespace: aws:autoscaling:launchconfiguration
+          OptionName: InstanceType
+          Value: t2.micro
+        - Namespace: aws:autoscaling:launchconfiguration
+          OptionName: IamInstanceProfile
+          Value: !Ref EC2InstanceProfile
+        - Namespace: aws:autoscaling:launchconfiguration
+          OptionName: DisableIMDSv1
+          Value: 'true'
+        - Namespace: aws:elasticbeanstalk:environment
+          OptionName: EnvironmentType
+          Value: SingleInstance
+        - Namespace: aws:elasticbeanstalk:environment
+          OptionName: ServiceRole
+          Value: !Ref ElasticBeanstalkServiceRole
+        - Namespace: aws:autoscaling:asg
+          OptionName: MinSize
+          Value: '1'
+        - Namespace: aws:autoscaling:asg
+          OptionName: MaxSize
+          Value: '1'
+
+  CodeBuildSourceCredential:
+    Type: AWS::CodeBuild::SourceCredential
+    Properties:
+      AuthType: PERSONAL_ACCESS_TOKEN
+      ServerType: GITHUB
+      Token: !Ref GithubTokenSecret
+
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${CbOutputPrefix}-CodeBuildProject
+      Source:
+        Type: GITHUB
+        Location: !Sub https://github.com/${GithubUserName}/${GithubRepoName}.git
+        GitCloneDepth: 1
+        ReportBuildStatus: true
+        Auth:
+          Type: OAUTH
+          Resource: !Ref CodeBuildSourceCredential
+      Artifacts:
+        Type: S3
+        Location: !Ref ArtifactBucket
+        Path: artifacts
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:6.0
+        Type: LINUX_CONTAINER
+        PrivilegedMode: true
+        EnvironmentVariables:
+          - Name: AWS_ACCOUNT_ID
+            Value: !Ref AWS::AccountId
+          - Name: AWS_DEFAULT_REGION
+            Value: !Ref AWS::Region
+      ServiceRole: !Ref CodeBuildServiceRole
+
+  CodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub ${CpOutputPrefix}-CodePipeline
+      RoleArn: !Ref CodePipelineServiceRole
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactBucket
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: GitHubSource
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: '1'
+              OutputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                Owner: !Ref GithubUserName
+                Repo: !Ref GithubRepoName
+                Branch: !Ref GithubBranch
+                OAuthToken: !Ref GithubTokenSecret
+        - Name: Build
+          Actions:
+            - Name: BuildAction
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: '1'
+              InputArtifacts:
+                - Name: SourceOutput
+              OutputArtifacts:
+                - Name: BuildOutput
+              Configuration:
+                ProjectName: !Ref CodeBuildProject
+        - Name: Deploy
+          Actions:
+            - Name: DeployToElasticBeanstalk
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: ElasticBeanstalk
+                Version: '1'
+              InputArtifacts:
+                - Name: BuildOutput
+              Configuration:
+                ApplicationName: !Ref ElasticBeanstalkApplication
+                EnvironmentName: !Ref ElasticBeanstalkEnvironment
+
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Ref ECRRepoName
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Expire untagged images after 30 days",
+                "selection": {
+                  "tagStatus": "untagged",
+                  "countType": "sinceImagePushed",
+                  "countUnit": "days",
+                  "countNumber": 30
+                },
+                "action": {
+                  "type": "expire"
+                }
+              }
+            ]
+          }
+      RepositoryPolicyText:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowPushPull
+            Effect: Allow
+            Principal:
+              AWS: !Ref ECRManagementRole
+            Action:
+              - ecr:BatchCheckLayerAvailability
+              - ecr:BatchGetImage
+              - ecr:CompleteLayerUpload
+              - ecr:DescribeRepositories
+              - ecr:GetDownloadUrlForLayer
+              - ecr:InitiateLayerUpload
+              - ecr:PutImage
+              - ecr:UploadLayerPart
+
+Outputs:
+  ElasticBeanstalkServiceRoleArn:
+    Description: ARN of the Elastic Beanstalk Service Role
+    Value: !GetAtt ElasticBeanstalkServiceRole.Arn
+    Export:
+      Name: !Sub ${IamOutputPrefix}-ElasticBeanstalkServiceRoleArn
+
+  EC2InstanceProfileArn:
+    Description: ARN of the EC2 Instance Profile
+    Value: !GetAtt EC2InstanceProfile.Arn
+    Export:
+      Name: !Sub ${IamOutputPrefix}-EC2InstanceProfileArn
+
+  EC2InstanceRoleArn:
+    Description: ARN of the EC2 Instance Role
+    Value: !GetAtt EC2InstanceRole.Arn
+    Export:
+      Name: !Sub ${IamOutputPrefix}-EC2InstanceRoleArn
+
+  CodeBuildServiceRoleArn:
+    Description: ARN of the CodeBuild Service Role
+    Value: !GetAtt CodeBuildServiceRole.Arn
+    Export:
+      Name: !Sub ${IamOutputPrefix}-CodeBuildServiceRoleArn
+
+  CodePipelineServiceRoleArn:
+    Description: ARN of the CodePipeline Service Role
+    Value: !GetAtt CodePipelineServiceRole.Arn
+    Export:
+      Name: !Sub ${IamOutputPrefix}-CodePipelineServiceRoleArn
+
+  ArtifactBucketName:
+    Value: !Ref ArtifactBucket
+    Export:
+      Name: !Sub ${S3OutputPrefix}-ArtifactBucketName
+
+  ElasticBeanstalkEnvironmentURL:
+    Description: URL of the Elastic Beanstalk Environment
+    Value: !GetAtt ElasticBeanstalkEnvironment.EndpointURL
+    Export:
+      Name: !Sub ${EbOutputPrefix}-ElasticBeanstalkEnvironmentURL
+
+  ElasticBeanstalkEnvironmentName:
+    Description: Name of the Elastic Beanstalk Environment
+    Value: !Ref ElasticBeanstalkEnvironment
+    Export:
+      Name: !Sub ${EbOutputPrefix}-ElasticBeanstalkEnvironmentName
+
+  ElasticBeanstalkApplicationName:
+    Description: Name of the Elastic Beanstalk Environment
+    Value: !Ref ElasticBeanstalkApplication
+    Export:
+      Name: !Sub ${EbOutputPrefix}-ElasticBeanstalkApplicationName
+
+  CodeBuildProjectArn:
+    Value: !Ref CodeBuildProject
+    Export:
+      Name: !Sub ${CbOutputPrefix}-CodeBuildProjectArn
+
+  ECRRepositoryUri:
+    Description: The URI of the ECR repository
+    Value: !GetAtt ECRRepository.RepositoryUri
+    Export:
+      Name: !Sub ${EcrOutputPrefix}-ECRRepositoryUri

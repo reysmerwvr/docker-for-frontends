@@ -1,43 +1,43 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: "Main Cloudformation Template"
+Description: Nested Stack Resources Cloudformation Template
 
 Resources:
   SecretStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'https://s3.amazonaws.com/cf-templates-1rkt1bxdxoosl-eu-west-1/docker-for-frontends/secrets-manager.yml'
+      TemplateURL: https://s3.amazonaws.com/cf-templates-1sssdcyntfe5g-eu-west-1/docker-for-frontends/secrets-manager.yml
 
   S3Stack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'https://s3.amazonaws.com/cf-templates-1rkt1bxdxoosl-eu-west-1/docker-for-frontends/s3-buckets.yml'
+      TemplateURL: https://s3.amazonaws.com/cf-templates-1sssdcyntfe5g-eu-west-1/docker-for-frontends/s3-buckets.yml
 
   IAMRolesStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'https://s3.amazonaws.com/cf-templates-1rkt1bxdxoosl-eu-west-1/docker-for-frontends/iam-roles.yml'
+      TemplateURL: https://s3.amazonaws.com/cf-templates-1sssdcyntfe5g-eu-west-1/docker-for-frontends/iam-roles.yml
     DependsOn: S3Stack
 
   EBApplicationStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'https://s3.amazonaws.com/cf-templates-1rkt1bxdxoosl-eu-west-1/docker-for-frontends/elastic-beanstalk.yml'
+      TemplateURL: https://s3.amazonaws.com/cf-templates-1sssdcyntfe5g-eu-west-1/docker-for-frontends/elastic-beanstalk.yml
     DependsOn: IAMRolesStack
 
   CodeBuildStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'https://s3.amazonaws.com/cf-templates-1rkt1bxdxoosl-eu-west-1/docker-for-frontends/codebuild.yml'
+      TemplateURL: https://s3.amazonaws.com/cf-templates-1sssdcyntfe5g-eu-west-1/docker-for-frontends/codebuild.yml
     DependsOn: EBApplicationStack
 
   CodePipelineStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'https://s3.amazonaws.com/cf-templates-1rkt1bxdxoosl-eu-west-1/docker-for-frontends/codepipeline.yml'
+      TemplateURL: https://s3.amazonaws.com/cf-templates-1sssdcyntfe5g-eu-west-1/docker-for-frontends/codepipeline.yml
     DependsOn: CodeBuildStack
 
   ECRStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'https://s3.amazonaws.com/cf-templates-1rkt1bxdxoosl-eu-west-1/docker-for-frontends/ecr.yml'
+      TemplateURL: https://s3.amazonaws.com/cf-templates-1sssdcyntfe5g-eu-west-1/docker-for-frontends/ecr.yml
     DependsOn: CodePipelineStack

@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Elastic Beanstalk Environment with Docker on Amazon Linux 2
+Description: Elastic Beanstalk Environment Application Cloudformation Template
 
 Parameters:
   StackOutputPrefix:
@@ -10,56 +10,56 @@ Parameters:
 Resources:
   # Create Elastic Beanstalk Application
   ElasticBeanstalkApplication:
-    Type: "AWS::ElasticBeanstalk::Application"
+    Type: AWS::ElasticBeanstalk::Application
     Properties:
-      ApplicationName: !Sub '${StackOutputPrefix}-ElasticBeanstalkApplication'
-      Description: "Elastic Beanstalk Application for Docker on Amazon Linux 2"
+      ApplicationName: !Sub ${StackOutputPrefix}-ElasticBeanstalkApplication
+      Description: Elastic Beanstalk Application for Docker on Amazon Linux 2
 
   # Elastic Beanstalk Environment
   ElasticBeanstalkEnvironment:
-    Type: "AWS::ElasticBeanstalk::Environment"
+    Type: AWS::ElasticBeanstalk::Environment
     Properties:
       ApplicationName: !Ref ElasticBeanstalkApplication
-      EnvironmentName: !Sub '${StackOutputPrefix}-ElasticBeanstalkEnvironment'
-      SolutionStackName: "64bit Amazon Linux 2 v4.0.4 running Docker"
+      EnvironmentName: !Sub ${StackOutputPrefix}-ElasticBeanstalkEnvironment
+      SolutionStackName: 64bit Amazon Linux 2 v4.0.5 running Docker
       OptionSettings:
-        - Namespace: "aws:autoscaling:launchconfiguration"
-          OptionName: "InstanceType"
-          Value: "t2.micro"
-        - Namespace: "aws:autoscaling:launchconfiguration"
-          OptionName: "IamInstanceProfile"
+        - Namespace: aws:autoscaling:launchconfiguration
+          OptionName: InstanceType
+          Value: t2.micro
+        - Namespace: aws:autoscaling:launchconfiguration
+          OptionName: IamInstanceProfile
           Value: !ImportValue DffIamStack-EC2InstanceProfileArn
-        - Namespace: "aws:autoscaling:launchconfiguration"
-          OptionName: "DisableIMDSv1"
-          Value: "true"
-        - Namespace: "aws:elasticbeanstalk:environment"
-          OptionName: "EnvironmentType"
-          Value: "SingleInstance"
-        - Namespace: "aws:elasticbeanstalk:environment"
-          OptionName: "ServiceRole"
+        - Namespace: aws:autoscaling:launchconfiguration
+          OptionName: DisableIMDSv1
+          Value: 'true'
+        - Namespace: aws:elasticbeanstalk:environment
+          OptionName: EnvironmentType
+          Value: SingleInstance
+        - Namespace: aws:elasticbeanstalk:environment
+          OptionName: ServiceRole
           Value: !ImportValue DffIamStack-ElasticBeanstalkServiceRoleArn
-        - Namespace: "aws:autoscaling:asg"
-          OptionName: "MinSize"
-          Value: "1"
-        - Namespace: "aws:autoscaling:asg"
-          OptionName: "MaxSize"
-          Value: "1"
+        - Namespace: aws:autoscaling:asg
+          OptionName: MinSize
+          Value: '1'
+        - Namespace: aws:autoscaling:asg
+          OptionName: MaxSize
+          Value: '1'
 
 Outputs:
   ElasticBeanstalkEnvironmentURL:
-    Description: "URL of the Elastic Beanstalk Environment"
+    Description: URL of the Elastic Beanstalk Environment
     Value: !GetAtt ElasticBeanstalkEnvironment.EndpointURL
     Export:
-      Name: !Sub '${StackOutputPrefix}-ElasticBeanstalkEnvironmentURL'
+      Name: !Sub ${StackOutputPrefix}-ElasticBeanstalkEnvironmentURL
 
   ElasticBeanstalkEnvironmentName:
-    Description: "Name of the Elastic Beanstalk Environment"
+    Description: Name of the Elastic Beanstalk Environment
     Value: !Ref ElasticBeanstalkEnvironment
     Export:
-      Name: !Sub '${StackOutputPrefix}-ElasticBeanstalkEnvironmentName'
+      Name: !Sub ${StackOutputPrefix}-ElasticBeanstalkEnvironmentName
 
   ElasticBeanstalkApplicationName:
-    Description: "Name of the Elastic Beanstalk Environment"
+    Description: Name of the Elastic Beanstalk Environment
     Value: !Ref ElasticBeanstalkApplication
     Export:
-      Name: !Sub '${StackOutputPrefix}-ElasticBeanstalkApplicationName'
+      Name: !Sub ${StackOutputPrefix}-ElasticBeanstalkApplicationName
