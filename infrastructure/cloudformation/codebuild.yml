@@ -38,6 +38,7 @@ Resources:
       Artifacts:
         Type: S3
         Location: !ImportValue DffS3Stack-ArtifactBucketName
+        Packaging: NONE
         Path: artifacts
       Environment:
         ComputeType: BUILD_GENERAL1_SMALL

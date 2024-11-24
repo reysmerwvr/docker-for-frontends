@@ -53,6 +53,8 @@ Resources:
               - ecr:InitiateLayerUpload
               - ecr:PutImage
               - ecr:UploadLayerPart
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
 
 Outputs:
   ECRRepositoryUri:

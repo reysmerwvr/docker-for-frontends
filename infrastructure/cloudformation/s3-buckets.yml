@@ -14,6 +14,8 @@ Resources:
       BucketName: docker-for-frontends-artifacts
       VersioningConfiguration:
         Status: Enabled
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
 
 Outputs:
   ArtifactBucketName:
