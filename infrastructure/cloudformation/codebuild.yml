@@ -38,8 +38,6 @@ Resources:
       Artifacts:
         Type: S3
         Location: !ImportValue DffS3Stack-ArtifactBucketName
-        Packaging: NONE
-        Path: artifacts
       Environment:
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/standard:6.0
