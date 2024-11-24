@@ -21,8 +21,6 @@ phases:
       - docker tag docker-for-frontends:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/docker-for-frontends:latest
       - echo "Pushing the Docker image to Amazon ECR..."
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/docker-for-frontends:latest
-      - echo "Creating deployment artifact for Elastic Beanstalk..."
-      - zip -r deploy.zip ./* -x '.*' 'infrastructure/*'
       - echo "Build phase completed."
 
   post_build:
@@ -31,5 +29,7 @@ phases:
 
 artifacts:
   files:
-    - deploy.zip
-  discard-paths: yes
+    - '**/*'
+  exclude-paths:
+    - '**/.*'
+    - '**/infrastructure/*'
