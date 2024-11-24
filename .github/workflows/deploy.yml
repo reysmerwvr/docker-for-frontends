@@ -29,7 +29,7 @@ jobs:
         run: docker run -e CI=true ${{ secrets.DOCKER_USERNAME }}/docker-for-frontends npm run test -- --coverage
 
       - name: Generate deployment package
-        run: zip -r deploy.zip . -x '*.git*'
+        run: zip -r deploy.zip . -x '.*' 'infrastructure/*'
 
       - name: Deploy to AWS Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v22
