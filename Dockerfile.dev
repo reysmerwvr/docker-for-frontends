@@ -1,11 +1,14 @@
 FROM node:lts-alpine
-
+# Set the baseImage on top of which our application will run, node in this case.
 WORKDIR /app
-
+# Set the working directory of the docker container.
 COPY package.json ./
-
+# Copy our package.json file from our local system to the docker image.
 RUN npm install
-
+# Execute npm install inside the docker image to install all our dependencies.
 COPY . .
-
+# Copy the rest of the files into the docker image.
+EXPOSE 3000
+# Define the network port that this container will listen on at runtime.
 CMD ["npm", "run", "dev"]
+# Set the default command to be executed when running the container, runs only when the container spins up.

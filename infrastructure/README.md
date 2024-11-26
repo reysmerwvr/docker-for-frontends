@@ -9,12 +9,12 @@
 - AWS CodeBuild for building the application
 - AWS CodePipeline for CI/CD
 - Deployment:
-  - Option 1: Github Actions for deploying the application to AWS Elastic Beanstalk
-  - Option 2: AWS CodeDeploy for deploying the application to AWS Elastic Beanstalk
 
-- Hosting: 
-    - AWS Elastic Beanstalk for hosting the application
+  - Option 1: GitHub Actions for deploying the application to AWS Elastic Beanstalk (GitHub, GitHub Action, DockerHub, IAM Roles, Elastic Beanstalk)
+  - Option 2: AWS CodeDeploy for deploying the application to AWS Elastic Beanstalk (GitHub, Secret Manager, IAM Roles, S3, Elastic Beanstalk, CodeBuild, CodePipeline, ECR)
 
+- Hosting:
+  - AWS Elastic Beanstalk for hosting the application
 
 ### Secret Manager
 
@@ -247,8 +247,6 @@ aws cloudformation delete-stack \
 ```
 
 ### Cloudformation Stack
-
-
 
 ```bash
 
